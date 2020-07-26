@@ -126,6 +126,7 @@ func NewCmdClusterCreate() *cobra.Command {
 	cmd.Flags().StringP("image", "i", fmt.Sprintf("%s:%s", k3d.DefaultK3sImageRepo, version.GetK3sVersion(false)), "Specify k3s image that you want to use for the nodes")
 	cmd.Flags().String("network", "", "Join an existing network")
 	cmd.Flags().String("token", "", "Specify a cluster token. By default, we generate one.")
+	cmd.Flags().StringP("memory", "m", "", "Specify the memory limit for the container(s) in GB (ie: 4g) or MB (ie: 512m) for the servers and the agent, by default using max available")
 	cmd.Flags().StringArrayP("volume", "v", nil, "Mount volumes into the nodes (Format: `[SOURCE:]DEST[@NODEFILTER[;NODEFILTER...]]`\n - Example: `k3d cluster create --agents 2 -v \"/my/path@agent[0,1]\" -v \"/tmp/test:/tmp/other@server[0]\"`")
 	cmd.Flags().StringArrayP("port", "p", nil, "Map ports from the node containers to the host (Format: `[HOST:][HOSTPORT:]CONTAINERPORT[/PROTOCOL][@NODEFILTER]`)\n - Example: `k3d cluster create --agents 2 -p \"8080:80@agent[0]\" -p \"8081@agent[1]\"`")
 	cmd.Flags().BoolVar(&createClusterOpts.WaitForServer, "wait", true, "Wait for the server(s) to be ready before returning. Use '--timeout DURATION' to not wait forever.")
@@ -316,6 +317,17 @@ func parseCreateClusterCmd(cmd *cobra.Command, args []string, createClusterOpts 
 	}
 
 	log.Tracef("PortFilterMap: %+v", portFilterMap)
+	// --memory
+	memory, err := cmd.Flags().GetString("memory")
+	var memorySize int64 = -1
+	if err != nil {
+		log.Fatalln(err)
+	} else if len(memory) > 0 {
+		memorySize, err = cliutil.ParseMemorySize(memory)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 
 	/********************
 	 *									*
@@ -352,6 +364,10 @@ func parseCreateClusterCmd(cmd *cobra.Command, args []string, createClusterOpts 
 			Args:       createClusterOpts.K3sServerArgs,
 			ServerOpts: k3d.ServerOpts{},
 		}
+		// set memory limit size if this param exist
+		if memorySize > 0 {
+			node.MemoryLimit = memorySize
+		}
 
 		// TODO: by default, we don't expose an API port: should we change that?
 		// -> if we want to change that, simply add the exposeAPI struct here
@@ -375,6 +391,10 @@ func parseCreateClusterCmd(cmd *cobra.Command, args []string, createClusterOpts 
 			Role:  k3d.AgentRole,
 			Image: image,
 			Args:  createClusterOpts.K3sAgentArgs,
+		}
+		// set memory limit size if this param exist
+		if memorySize > 0 {
+			node.MemoryLimit = memorySize
 		}
 
 		cluster.Nodes = append(cluster.Nodes, &node)

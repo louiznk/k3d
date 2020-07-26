@@ -68,6 +68,8 @@ func NewCmdNodeCreate() *cobra.Command {
 
 	cmd.Flags().StringP("image", "i", fmt.Sprintf("%s:%s", k3d.DefaultK3sImageRepo, version.GetK3sVersion(false)), "Specify k3s image used for the node(s)")
 
+	cmd.Flags().StringP("memory", "m", "", "Specify the memory limit for the container(s) in GB (ie: 4g) or MB (ie: 512m) for the servers and the agent, by default using max available")
+
 	cmd.Flags().BoolVar(&createNodeOpts.Wait, "wait", false, "Wait for the node(s) to be ready before returning.")
 	cmd.Flags().DurationVar(&createNodeOpts.Timeout, "timeout", 0*time.Second, "Maximum waiting time for '--wait' before canceling/returning.")
 
@@ -112,6 +114,18 @@ func parseCreateNodeCmd(cmd *cobra.Command, args []string) ([]*k3d.Node, *k3d.Cl
 		Name: clusterName,
 	}
 
+	// --memory
+	memory, err := cmd.Flags().GetString("memory")
+	var memorySize int64 = -1
+	if err != nil {
+		log.Fatalln(err)
+	} else if len(memory) > 0 {
+		memorySize, err = util.ParseMemorySize(memory)
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
+
 	// generate list of nodes
 	nodes := []*k3d.Node{}
 	for i := 0; i < replicas; i++ {
@@ -122,6 +136,9 @@ func parseCreateNodeCmd(cmd *cobra.Command, args []string) ([]*k3d.Node, *k3d.Cl
 			Labels: map[string]string{
 				k3d.LabelRole: roleStr,
 			},
+		}
+		if memorySize > 0 {
+			node.MemoryLimit = memorySize
 		}
 		nodes = append(nodes, node)
 	}

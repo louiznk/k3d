@@ -79,6 +79,11 @@ func TranslateNodeToContainer(node *k3d.Node) (*NodeInDocker, error) {
 	// TODO: can we replace this by a reduced set of capabilities?
 	hostConfig.Privileged = true
 
+	/* Set Memory Limit */
+	if node.MemoryLimit > 0 {
+		hostConfig.Resources.Memory = node.MemoryLimit
+	}
+
 	/* Volumes */
 	hostConfig.Binds = node.Volumes
 	// containerConfig.Volumes = map[string]struct{}{} // TODO: do we need this? We only used binds before

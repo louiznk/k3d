@@ -54,6 +54,14 @@ func (d Containerd) CreateNode(ctx context.Context, node *k3d.Node) error {
 			return nil
 		},
 	}
+	/*
+		// Try to add memory limit oci/spec_opts.go WithMemoryLimit function (WithNewSpec..GenerateSpec)
+		if node.MemoryLimit > 0 {
+			specOpts := oci.WithMemoryLimit(uint64(node.MemoryLimit))
+
+			newContainerOpts = append(newContainerOpts,containerd.WithNewSpec(specOpts))
+		}
+	*/
 	container, err := client.NewContainer(ctx, node.Name, newContainerOpts...)
 	if err != nil {
 		log.Errorln("Couldn't create container")

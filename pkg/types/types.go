@@ -227,21 +227,22 @@ func (c *Cluster) HasLoadBalancer() bool {
 
 // Node describes a k3d node
 type Node struct {
-	Name       string            `yaml:"name" json:"name,omitempty"`
-	Role       Role              `yaml:"role" json:"role,omitempty"`
-	Image      string            `yaml:"image" json:"image,omitempty"`
-	Volumes    []string          `yaml:"volumes" json:"volumes,omitempty"`
-	Env        []string          `yaml:"env" json:"env,omitempty"`
-	Cmd        []string          // filled automatically based on role
-	Args       []string          `yaml:"extra_args" json:"extraArgs,omitempty"`
-	Ports      []string          `yaml:"port_mappings" json:"portMappings,omitempty"`
-	Restart    bool              `yaml:"restart" json:"restart,omitempty"`
-	Labels     map[string]string // filled automatically
-	Network    string            // filled automatically
-	ExtraHosts []string          // filled automatically
-	ServerOpts ServerOpts        `yaml:"server_opts" json:"serverOpts,omitempty"`
-	AgentOpts  AgentOpts         `yaml:"agent_opts" json:"agentOpts,omitempty"`
-	State      NodeState         // filled automatically
+	Name        string            `yaml:"name" json:"name,omitempty"`
+	Role        Role              `yaml:"role" json:"role,omitempty"`
+	Image       string            `yaml:"image" json:"image,omitempty"`
+	Volumes     []string          `yaml:"volumes" json:"volumes,omitempty"`
+	Env         []string          `yaml:"env" json:"env,omitempty"`
+	Cmd         []string          // filled automatically based on role
+	Args        []string          `yaml:"extra_args" json:"extraArgs,omitempty"`
+	Ports       []string          `yaml:"port_mappings" json:"portMappings,omitempty"`
+	Restart     bool              `yaml:"restart" json:"restart,omitempty"`
+	Labels      map[string]string // filled automatically
+	Network     string            // filled automatically
+	ExtraHosts  []string          // filled automatically
+	ServerOpts  ServerOpts        `yaml:"server_opts" json:"serverOpts,omitempty"`
+	AgentOpts   AgentOpts         `yaml:"agent_opts" json:"agentOpts,omitempty"`
+	State       NodeState         // filled automatically
+	MemoryLimit int64             `yaml:"memory" json:"memory,omitempty"` // memory in bit
 }
 
 // ServerOpts describes some additional server role specific opts
